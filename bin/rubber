@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+# require 'rubber'
+require File.dirname(__FILE__) + '/../lib/rubber.rb'
+
+
+Rubber.new(ARGV).run
