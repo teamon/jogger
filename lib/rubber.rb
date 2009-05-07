@@ -1,0 +1,3 @@
+class Rubber
+  
+end
