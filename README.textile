@@ -3,28 +3,33 @@ h2. rubber v. 0.0.1
 Edytor szablonów Joggera
 
 h3. Instalacja
+
 <pre><code>
 gem sources -a http://gems.github.com
 sudo gem install teamon-rubber
 </pre></code>
 
 h3. Inicjalizacja
+
 <pre><code>
 mkdir my_jogger
 rubber
 </pre></code>
 
 h3. Pobranie plików z Joggera
+
 <pre><code>
 rubber download
 </pre></code>
 
 h3. Wysłanie zmodyfikowanych plików na Joggera
+
 <pre><code>
 rubber upload files/my_file.html
 </pre></code>
 
 h3. Wysłanie wszystkich plików na Joggera
+
 <pre><code>
 rubber upload files/*
 </pre></code>
