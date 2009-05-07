@@ -7,13 +7,12 @@ GEM_VERSION = "0.0.1"
 AUTHOR = "Tymon Tobolski"
 EMAIL = "i@teamon.eu"
 HOMEPAGE = "http://teamon.eu/projekty/"
-SUMMARY = "Jogger"
+SUMMARY = "Edytor szablonów Joggera"
 
 spec = Gem::Specification.new do |s|
   s.name = GEM_NAME
   s.version = GEM_VERSION
-  s.has_rdoc = true
-  s.extra_rdoc_files = ["README", "LICENSE"]
+  s.has_rdoc = false
   s.summary = SUMMARY
   s.description = s.summary
   s.author = AUTHOR
@@ -22,8 +21,8 @@ spec = Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.bindir = 'bin'
   s.executables = %w( rubber )
-  s.files = %w( LICENSE README Rakefile ) +  Dir.glob("{bin,lib}/**/*")
-  # s.add_dependency('xxx', '>= 0.9')
+  s.files = %w( LICENSE README.textile Rakefile ) +  Dir.glob("{bin,lib}/**/*")
+  s.add_dependency('mechanize', '>= 0.9.0')
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|
