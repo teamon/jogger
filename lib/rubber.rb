@@ -37,34 +37,25 @@ class Rubber
   def download
     login
     get_filemap
+    get_pagesmap
 
+    # files
     Dir.mkdir("files") unless File.exists?("files")
-
-    @filemap.each_pair do |filename, url|
+    @filemap.each do |filename, url|
       puts "Pobieranie #{filename}"
-      write = true
-
-      if File.exists?(filename)
-        write = false
-        puts "Plik #{filename} istnieje. Nadpisac? [T/N]"
-
-        loop do
-          print "> "
-          res = STDIN.gets.chomp.upcase
-          if res == "T"
-            write = true
-            break
-          elsif res == "N"
-            break
-          else
-            puts "Nie czaje..."
-          end
-        end
-
+      
+      if confirm(filename)
+        File.open(filename, 'wb') {|f| f.write @agent.get(url).body }
       end
+    end
 
-      if write
-        File.open(filename, 'w') {|f| f.write @agent.get(url).forms.first.templatesContent }
+    # strony
+    Dir.mkdir("strony") unless File.exists?("strony")
+    @pagesmap.each do |filename, url|
+      puts "Pobieranie #{filename}"
+      
+      if confirm(filename)
+        File.open(filename, 'w') {|f| f.write @agent.get("https://login.jogger.pl#{url}").forms.first.templatesContent }
       end
     end
   end
@@ -72,11 +63,17 @@ class Rubber
   def upload(files = [])
     login
     get_filemap
+    get_pagesmap
 
     files.each do |file|
-      if url = @filemap[file]
+      if url = @pagesmap[file]
         form = @agent.get(url).forms.first
         form.templatesContent = File.read(file)
+        form.submit
+        puts "Plik #{file} został zaktualizowany"
+      elsif url = @filemap[file] || file =~ %r[^files/]
+        form = @agent.get('https://login.jogger.pl/templates/files/').forms.first
+        form.file_uploads.first.file_name = file
         form.submit
         puts "Plik #{file} został zaktualizowany"
       else
@@ -84,9 +81,38 @@ class Rubber
       end
     end
   end
+  
+  def confirm(filename)
+    if File.exists?(filename) && @args[1] != '--force'
+      puts "Plik #{filename} istnieje. Nadpisac? [T/N]"
+
+      loop do
+        print "> "
+        res = STDIN.gets.chomp.upcase
+        
+        if res == "T"
+          return true
+        elsif res == "N"
+          return false
+        else
+          puts "Nie czaje..."
+        end
+      end
+      
+    end
+    
+    return true
+  end
+  
+  def get_pagesmap
+    @pagesmap = Hash[*@agent.get('https://login.jogger.pl/templates/edit/').links.select{|e| e.href =~ %r[/templates/edit/\?page_id] }.map {|e| ["strony/#{e.text}.html", e.href]}.flatten]
+    @pagesmap["Szablon wpisów.html"] ='/templates/edit/?file=entries'
+    @pagesmap["Szablon komentarzy.html"] ='/templates/edit/?file=comments'
+    @pagesmap["Szablon logowania.html"] ='/templates/edit/?file=login'
+   end
 
   def get_filemap
-    @filemap = Hash[*@agent.get('https://login.jogger.pl/templates/edit/').links.select{|e| e.href =~ %r[/templates/edit] }.map {|e| [File.join("files", e.text =~ /\./ ? e.text : e.text + '.html'), e.href]}.flatten]
+    @filemap = Hash[*@agent.get('https://login.jogger.pl/templates/files/').parser.css("td > a").map {|e| ["files/#{e.text}", e[:href]] }.flatten]
   end
 
   def login
@@ -106,7 +132,7 @@ class Rubber
 rubber [action]
 
 Actions:
- download
+ download (--force)
  upload [file]
 USAGE
     exit

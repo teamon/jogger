@@ -13,6 +13,7 @@ h3. Inicjalizacja
 
 <pre><code>
 mkdir my_jogger
+cd my_jogger
 rubber
 </pre></code>
 
