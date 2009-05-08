@@ -34,3 +34,11 @@ h3. Wysłanie wszystkich plików na Joggera
 <pre><code>
 rubber upload files/*
 </pre></code>
+
+h3. Uruchomienie serwera
+
+<pre><code>
+rubber server
+</pre></code>
+
+Twój jogger jest dostępny pod adresem http://localhost:1337

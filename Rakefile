@@ -3,7 +3,7 @@ require 'rake/gempackagetask'
 
 PLUGIN = "rubber"
 GEM_NAME = "rubber"
-GEM_VERSION = "0.0.2"
+GEM_VERSION = "0.0.3"
 AUTHOR = "Tymon Tobolski"
 EMAIL = "i@teamon.eu"
 HOMEPAGE = "http://teamon.eu/projekty/"
@@ -23,6 +23,7 @@ spec = Gem::Specification.new do |s|
   s.executables = %w( rubber )
   s.files = %w( LICENSE README.textile Rakefile ) +  Dir.glob("{bin,lib}/**/*")
   s.add_dependency('mechanize', '>= 0.9.0')
+  s.add_dependency('thin')
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|

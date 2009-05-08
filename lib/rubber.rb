@@ -29,9 +29,15 @@ class Rubber
     when 'upload'
       @args.shift
       upload(@args)
+    when 'server'
+      server
     else
       usage
     end
+  end
+  
+  def server
+    system("thin start -R #{File.join(File.dirname(__FILE__), "server.ru")} -p 1337")
   end
 
   def download
