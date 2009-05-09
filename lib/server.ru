@@ -28,10 +28,7 @@ def parse_with_comment(body, comment, counter = 0)
   
   body.gsub!(%r|<COMMENT_FAVICON_EXIST>(.+)</COMMENT_FAVICON_EXIST>|m) { comment[:favicon] ? parse_with_comment($1, comment, counter) : "" }
   body.gsub!(%r|<COMMENT_FAVICON_NOT_EXIST>(.+)</COMMENT_FAVICON_NOT_EXIST>|m) { comment[:favicon] ? "" : parse_with_comment($1, comment, counter) }
-  
-  
   body.gsub!(%r|<COMMENT_EDIT_EXIST>(.+)</COMMENT_EDIT_EXIST>|m) { comment[:edit] ? parse_with_comment($1, comment, counter) : "" }
-  
 end
 
 def parse_with_entry(body, entry, counter = 0)
@@ -54,7 +51,7 @@ def parse_with_entry(body, entry, counter = 0)
   body.gsub!(%r|<ENTRY_CONTENT_SHORT_NOT_EXIST>(.+)</ENTRY_CONTENT_SHORT_NOT_EXIST>|m) { entry[:content]["<EXCERPT>"] ? "" : parse_with_entry($1, entry) }
   
   tag body, "ENTRY_COMMENT_HREF", "/entry"
-  tag body, "ENTRY_COMMENT_HREF_DESCR", entry[:comments] ? "#{entry[:comments].size} koemntarzy" : "Brak komentarzy"
+  tag body, "ENTRY_COMMENT_HREF_DESCR", entry[:comments] ? "#{entry[:comments].size} komentarzy" : "Brak komentarzy"
   tag body, "ENTRY_CLASS", "entry#{(counter % 2)+1}"
   entry_counter = 0 if body["ENTRY_CLASS_RESET"]
   
@@ -93,7 +90,6 @@ def parse_with_entry(body, entry, counter = 0)
       tag body, "ENTRY_#{type}_HREF", "/entry"
     end
   end
-  
 
   body.gsub!(%r|<ENTRY_IS_MINIBLOG>(.+)</ENTRY_IS_MINIBLOG>|m) { entry[:miniblog] ? parse_with_entry($1, entry) : "" }
   
@@ -183,7 +179,7 @@ def parse(type, body)
     tag body, "PAGE_PREV_HREF", "/prev"
     tag body, "PAGE_NEXT_HREF", "/next"
     
-    
+
   when :comments
     entry = J[:entries].first
     parse_with_entry(body, entry)
@@ -198,9 +194,76 @@ def parse(type, body)
 
     body.gsub!(%r|<COMMENT_BLOCK_EXIST>(.+)</COMMENT_BLOCK_EXIST>|m) { entry[:comments] ? parse(:comments, $1) : "" }
     body.gsub!(%r|<COMMENT_BLOCK_NOT_EXIST>(.+)</COMMENT_BLOCK_NOT_EXIST>|m) { entry[:comments] ? "" : parse(:comments, $1) }    
-    
     body.gsub!(%r|<COMMENT_ALLOWED_BLOCK>(.+)</COMMENT_ALLOWED_BLOCK>|m) { entry[:comments_allowed] ? parse(:comments, $1) : "" }   
     body.gsub!(%r|<COMMENT_NONE_BLOCK>(.+)</COMMENT_NONE_BLOCK>|m) { entry[:comments_allowed] ? "" : parse(:comments, $1) }    
+    
+    
+    
+    tag body, "COMMENT_FORM", <<-FORM
+    <form action="[adres_wpisu]?op=addcomm" method="post" id="formcomment">
+      <fieldset>
+        <legend id="formname">Dodaj komentarz</legend>
+        <div class="commrow1">
+          <label id="commnicklab" for="commnickid">Podpis</label>
+          <input type="text" name="commnickid" id="commnickid" value="[Twój_jid]" />
+        </div>
+        <div class="commrow2">
+          <label id="commbodylab" for="commbody">Treść</label>
+          <textarea name="commbody" id="commbody" cols="60" rows="6"></textarea>
+        </div>
+        <div>
+          <input type="submit" name="submit" id="submitcomm" value="Wyślij komentarz " />
+        </div>
+      </fieldset>
+    </form>
+    FORM
+    
+    tag body, "COMMENT_FORM2", <<-FORM
+    <form action="/comment.php" method="post">
+    <div>
+      <input type="hidden" name="jid" value="[jid_komentowanego]" />
+      <input type="hidden" name="eid" value="[id_wpisu]" />
+      <input type="hidden" name="startid" value="0" />
+      <input type="hidden" name="op" value="addcomm" />
+    </div>
+    <table>
+      <tr>
+        <td>Podpis:</td>
+        <td><input type="text" name="commnickid" id="commnickid" value="[Twój_jid]" /></td>
+      </tr>
+      <tr>
+        <td>Treść:</td>
+        <td><textarea name="commbody" id="commbody" cols="60" rows="6"></textarea></td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>
+          <input type="checkbox" name="notifyentry" value="notify" />Śledź ten wątek i powiadom mnie o nowych komentarzach
+        </td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td><input type='submit' name="submit" id="submitcomm" value='Wyślij' /></td>
+      </tr>
+    </table>
+    </form>    
+    FORM
+    
+    
+    body.gsub!(%r|<COMMENT_FORM_BLOCK>(.+)</COMMENT_FORM_BLOCK>|m) { $1 }
+      
+    tag body, "COMMENT_FORM_ACTION", "/lawl"
+    tag body, "COMMENT_FORM_BODY", "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    tag body, "COMMENT_FORM_CODE", "..."
+    tag body, "COMMENT_FORM_NICKID", "teamon"
+    tag body, "COMMENT_FORM_NICKURL", "http://blog.teamon.eu"
+    
+    body.gsub!(%r|<COMMENT_FORM_NOTIFY_START_BLOCK>(.+)</COMMENT_FORM_NOTIFY_START_BLOCK>|m) { $1 }
+    body.gsub!(%r|<COMMENT_FORM_NOTIFY_STOP_BLOCK>(.+)</COMMENT_FORM_NOTIFY_STOP_BLOCK>|m) { $1 }
+    body.gsub!(%r|<COMMENT_FORM_NOUSER_BLOCK>(.+)</COMMENT_FORM_NOUSER_BLOCK>|m) { $1 }
+    body.gsub!(%r|<COMMENT_LOGGED_BLOCK>(.+)</COMMENT_LOGGED_BLOCK>|) { "" }
+    body.gsub!(%r|<COMMENT_NONE_BLOCK>(.+)</COMMENT_NONE_BLOCK>|m) { entry[:allowed_comments] ? "" : $1 }
+
   when :login
     
   when :page
