@@ -71,6 +71,16 @@ def parse_with_entry(body, entry, counter = 0)
     end.join
   end
   
+  body.gsub!(%r|<ENTRY_TAG_BLOCK_EXIST>(.+)</ENTRY_TAG_BLOCK_EXIST>|m) { entry[:tags] ? parse_with_entry($1, entry) : "" }
+  body.gsub!(%r|<ENTRY_TAG_BLOCK>(.+)</ENTRY_TAG_BLOCK>|m) do
+    tag_block = $1
+    entry[:tags].map do |t|
+      tagbody = tag_block.dup
+      tag tagbody, "ENTRY_TAG_DESCR", t
+      tagbody
+    end.join
+  end
+  
   tag body, "ENTRY_TRACKBACK_HREF", entry[:trackback]
   body.gsub!(%r|<ENTRY_TRACKBACK_EXIST>(.+)</ENTRY_TRACKBACK_EXIST>|m) { entry[:trackback] ? parse_with_entry($1, entry) : "" }
   body.gsub!(%r|<ENTRY_TRACKBACK_NOT_EXIST>(.+)</ENTRY_TRACKBACK_NOT_EXIST>|m) { entry[:trackback] ? "" : parse_with_entry($1, entry) }
