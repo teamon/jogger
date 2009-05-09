@@ -16,9 +16,8 @@ class Rubber
     if File.exists?("config.yml")
       @config = YAML.load(File.read("config.yml"))
     else
-      File.open("config.yml", "w") {|f|
-        f.write YAML.dump({:jabber_id => "your@jabber.id", :password => "secret"})
-      }
+      File.open("config.yml", "w") {|f| f.write YAML.dump({:jabber_id => "your@jabber.id", :password => "secret"}) }
+      File.open("content.yml", "w") {|f| f.write File.read(File.join(File.dirname(__FILE__), "content.yml.sample")) } unless File.exists?("content.yml")
       puts "Brak pliku config.yml. Przykładowy plik został utworzony."
       exit
     end
@@ -35,7 +34,7 @@ class Rubber
       usage
     end
   end
-  
+
   def server
     system("thin start -R #{File.join(File.dirname(__FILE__), "server.ru")} -p 1337")
   end
@@ -49,7 +48,7 @@ class Rubber
     Dir.mkdir("files") unless File.exists?("files")
     @filemap.each do |filename, url|
       puts "Pobieranie #{filename}"
-      
+
       if confirm(filename)
         File.open(filename, 'wb') {|f| f.write @agent.get(url).body }
       end
@@ -59,7 +58,7 @@ class Rubber
     Dir.mkdir("strony") unless File.exists?("strony")
     @pagesmap.each do |filename, url|
       puts "Pobieranie #{filename}"
-      
+
       if confirm(filename)
         File.open(filename, 'w') {|f| f.write @agent.get("https://login.jogger.pl#{url}").forms.first.templatesContent }
       end
@@ -87,7 +86,7 @@ class Rubber
       end
     end
   end
-  
+
   def confirm(filename)
     if File.exists?(filename) && @args[1] != '--force'
       puts "Plik #{filename} istnieje. Nadpisac? [T/N]"
@@ -95,7 +94,7 @@ class Rubber
       loop do
         print "> "
         res = STDIN.gets.chomp.upcase
-        
+
         if res == "T"
           return true
         elsif res == "N"
@@ -104,12 +103,12 @@ class Rubber
           puts "Nie czaje..."
         end
       end
-      
+
     end
-    
+
     return true
   end
-  
+
   def get_pagesmap
     @pagesmap = Hash[*@agent.get('https://login.jogger.pl/templates/edit/').links.select{|e| e.href =~ %r[/templates/edit/\?page_id] }.map {|e| ["strony/#{e.text}.html", e.href]}.flatten]
     @pagesmap["Szablon wpisów.html"] ='/templates/edit/?file=entries'

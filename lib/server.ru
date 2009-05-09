@@ -268,11 +268,11 @@ def parse(type, body)
     tag body, "COMMENT_FORM_NICKID", "teamon"
     tag body, "COMMENT_FORM_NICKURL", "http://blog.teamon.eu"
     
-    body.gsub!(%r|<COMMENT_FORM_NOTIFY_START_BLOCK>(.+)</COMMENT_FORM_NOTIFY_START_BLOCK>|m) { $1 }
-    body.gsub!(%r|<COMMENT_FORM_NOTIFY_STOP_BLOCK>(.+)</COMMENT_FORM_NOTIFY_STOP_BLOCK>|m) { $1 }
-    body.gsub!(%r|<COMMENT_FORM_NOUSER_BLOCK>(.+)</COMMENT_FORM_NOUSER_BLOCK>|m) { $1 }
-    body.gsub!(%r|<COMMENT_LOGGED_BLOCK>(.+)</COMMENT_LOGGED_BLOCK>|) { "" }
-    body.gsub!(%r|<COMMENT_NONE_BLOCK>(.+)</COMMENT_NONE_BLOCK>|m) { entry[:allowed_comments] ? "" : $1 }
+    body.gsub!(%r|<COMMENT_FORM_NOTIFY_START_BLOCK>(.+?)</COMMENT_FORM_NOTIFY_START_BLOCK>|m) { $1 }
+    body.gsub!(%r|<COMMENT_FORM_NOTIFY_STOP_BLOCK>(.+?)</COMMENT_FORM_NOTIFY_STOP_BLOCK>|m) { $1 }
+    body.gsub!(%r|<COMMENT_FORM_NOUSER_BLOCK>(.+?)</COMMENT_FORM_NOUSER_BLOCK>|m) { $1 }
+    body.gsub!(%r|<COMMENT_LOGGED_BLOCK>(.+?)</COMMENT_LOGGED_BLOCK>|) { "" }
+    body.gsub!(%r|<COMMENT_NONE_BLOCK>(.+?)</COMMENT_NONE_BLOCK>|m) { entry[:allowed_comments] ? "" : $1 }
 
   when :login
     
@@ -303,7 +303,7 @@ app = Proc.new do |env|
     else
       path = "strony/#{path.gsub('-', ' ').gsub('/', '').capitalize}.html"
       if File.exists?(path)
-        parse File.read(path)
+        parse :page, File.read(path)
       else
         "NotFound"
       end

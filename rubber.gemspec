@@ -2,16 +2,16 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rubber}
-  s.version = "0.0.3"
+  s.version = "0.0.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tymon Tobolski"]
-  s.date = %q{2009-05-08}
+  s.date = %q{2009-05-09}
   s.default_executable = %q{rubber}
   s.description = %q{Edytor szablonów Joggera}
   s.email = %q{i@teamon.eu}
   s.executables = ["rubber"]
-  s.files = ["LICENSE", "README.textile", "Rakefile", "bin/rubber", "lib/rubber.rb", "lib/server.ru"]
+  s.files = ["LICENSE", "README.textile", "Rakefile", "bin/rubber", "lib/content.yml.sample", "lib/rubber.rb", "lib/server.ru"]
   s.homepage = %q{http://teamon.eu/projekty/}
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.2}

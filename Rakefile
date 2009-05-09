@@ -3,7 +3,7 @@ require 'rake/gempackagetask'
 
 PLUGIN = "rubber"
 GEM_NAME = "rubber"
-GEM_VERSION = "0.0.3"
+GEM_VERSION = "0.0.4"
 AUTHOR = "Tymon Tobolski"
 EMAIL = "i@teamon.eu"
 HOMEPAGE = "http://teamon.eu/projekty/"

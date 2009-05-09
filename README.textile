@@ -42,3 +42,5 @@ rubber server
 </pre></code>
 
 Twój jogger jest dostępny pod adresem http://localhost:1337
+
+Przykładowe treści można zmienić w pliku content.yml
