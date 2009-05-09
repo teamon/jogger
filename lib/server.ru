@@ -10,6 +10,30 @@ def tag(body, pattern, replacement)
   body.gsub! %r|&#{pattern};|, replacement.to_s
 end
 
+def parse_with_comment(body, comment, counter = 0)
+  tag body, "COMMENT_CLASS", "comment#{(counter % 2)+1}"
+  tag body, "COMMENT_EDIT_HREF", "/edit_me_please"
+  tag body, "COMMENT_NICK", comment[:nick]
+  tag body, "COMMENT_DATE", "#{comment[:date].day} #{MONTHS[comment[:date].month]} #{comment[:date].hour}"
+  tag body, "COMMENT_DATE_DAY", comment[:date].day
+  tag body, "COMMENT_DATE_MONTH", MONTHS[comment[:date].month]
+  tag body, "COMMENT_DATE_YEAR", comment[:date].year
+  tag body, "COMMENT_HOUR", comment[:date].hour
+  tag body, "COMMENT_NUMBER", counter+1
+  tag body, "COMMENT_CONTENT", comment[:content]
+  tag body, "COMMENT_FAVICON", comment[:favicon]
+  tag body, "COMMENT_FAVICON2", comment[:favicon]
+  tag body, "COMMENT_ID", rand(100)
+  tag body, "COMMENT_NICK_CLASS", comment[:class]
+  
+  body.gsub!(%r|<COMMENT_FAVICON_EXIST>(.+)</COMMENT_FAVICON_EXIST>|m) { comment[:favicon] ? parse_with_comment($1, comment, counter) : "" }
+  body.gsub!(%r|<COMMENT_FAVICON_NOT_EXIST>(.+)</COMMENT_FAVICON_NOT_EXIST>|m) { comment[:favicon] ? "" : parse_with_comment($1, comment, counter) }
+  
+  
+  body.gsub!(%r|<COMMENT_EDIT_EXIST>(.+)</COMMENT_EDIT_EXIST>|m) { comment[:edit] ? parse_with_comment($1, comment, counter) : "" }
+  
+end
+
 def parse_with_entry(body, entry, counter = 0)
   tag body, "ENTRY_SUBJECT", entry[:subject]
   tag body, "ENTRY_TITLE", entry[:subject]
@@ -30,7 +54,7 @@ def parse_with_entry(body, entry, counter = 0)
   body.gsub!(%r|<ENTRY_CONTENT_SHORT_NOT_EXIST>(.+)</ENTRY_CONTENT_SHORT_NOT_EXIST>|m) { entry[:content]["<EXCERPT>"] ? "" : parse_with_entry($1, entry) }
   
   tag body, "ENTRY_COMMENT_HREF", "/entry"
-  tag body, "ENTRY_COMMENT_HREF_DESCR", "3 komentarze"
+  tag body, "ENTRY_COMMENT_HREF_DESCR", entry[:comments] ? "#{entry[:comments].size} koemntarzy" : "Brak komentarzy"
   tag body, "ENTRY_CLASS", "entry#{(counter % 2)+1}"
   entry_counter = 0 if body["ENTRY_CLASS_RESET"]
   
@@ -55,12 +79,12 @@ def parse_with_entry(body, entry, counter = 0)
   body.gsub!(%r|<ENTRY_TRACKBACK_NOT_EXIST>(.+)</ENTRY_TRACKBACK_NOT_EXIST>|m) { entry[:trackback] ? "" : parse_with_entry($1, entry) }
   
   ["PREV", "NEXT"].each do |type|
-    p = type.downcase.to_sym
+    p = entry[type.downcase.to_sym]
     
     body.gsub!(%r|<ENTRY_#{type}_EXIST>(.+)</ENTRY_#{type}_EXIST>|m) { p ? parse_with_entry($1, entry) : "" }
     body.gsub!(%r|<ENTRY_#{type}_NOT_EXIST>(.+)</ENTRY_#{type}_NOT_EXIST>|m) { p ? "" : parse_with_entry($1, entry) }
    
-    if p = entry[:prev]
+    if p
       tag body, "ENTRY_#{type}_SUBJECT", p[:subject]
       tag body, "ENTRY_#{type}_TITLE", p[:subject]
       tag body, "ENTRY_#{type}_CONTENT", p[:content].sub(%r|<EXCERPT>|, "")
@@ -161,8 +185,22 @@ def parse(type, body)
     
     
   when :comments
-    parse_with_entry(body, J[:entries].first)
+    entry = J[:entries].first
+    parse_with_entry(body, entry)
     
+    body.gsub!(%r|<COMMENT_BLOCK>(.+)</COMMENT_BLOCK>|m) do
+      comment_block = $1
+      comment_counter = -1
+      entry[:comments].map do |comment|
+        parse_with_comment(comment_block.dup, comment, comment_counter += 1)
+      end.join   
+    end
+
+    body.gsub!(%r|<COMMENT_BLOCK_EXIST>(.+)</COMMENT_BLOCK_EXIST>|m) { entry[:comments] ? parse(:comments, $1) : "" }
+    body.gsub!(%r|<COMMENT_BLOCK_NOT_EXIST>(.+)</COMMENT_BLOCK_NOT_EXIST>|m) { entry[:comments] ? "" : parse(:comments, $1) }    
+    
+    body.gsub!(%r|<COMMENT_ALLOWED_BLOCK>(.+)</COMMENT_ALLOWED_BLOCK>|m) { entry[:comments_allowed] ? parse(:comments, $1) : "" }   
+    body.gsub!(%r|<COMMENT_NONE_BLOCK>(.+)</COMMENT_NONE_BLOCK>|m) { entry[:comments_allowed] ? "" : parse(:comments, $1) }    
   when :login
     
   when :page
