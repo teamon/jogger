@@ -116,6 +116,35 @@ def parse(type, body)
     end.join
   end
   
+  body.gsub!(%r|<LINK_BLOCK_EXIST>(.+)</LINK_BLOCK_EXIST>|m) { J[:links] ? parse(nil, $1) : "" }
+    
+  body.gsub!(%r|<LINK_GROUP_BLOCK>(.+)</LINK_GROUP_BLOCK>|m) do
+    link_group_block = $1
+    link_counter = -1
+    J[:links].map do |link_group|
+      grobody = link_group_block.dup
+      tag grobody, "LINK_GROUP_DESCR", link_group[:name]
+      
+      grobody.gsub!(%r|<LINK_BLOCK>(.+)</LINK_BLOCK>|m) do
+        link_block = $1
+        link_group[:links].map do |link|
+          link_counter += 1
+          linkbody = link_block.dup
+          
+          tag linkbody, "LINK_HREF", "/za_duzo_bys_chcial"
+          tag linkbody, "LINK_HREF_DESCR", link
+          tag linkbody, "LINK_TITLE", link
+          tag linkbody, "LINK_CLASS", "link#{(link_counter % 2)+1}"
+          link_counter = -1 if linkbody["LINK_CLASS_RESET"]
+          
+          linkbody
+        end.join
+      end
+      
+      grobody
+    end.join
+  end
+  
   case type
   when :entries
     body.gsub!(%r|<ENTRY_BLOCK>(.+)</ENTRY_BLOCK>|m) do
@@ -138,7 +167,7 @@ def parse(type, body)
     
   when :page
     tag body, "PAGE_SUBJECT", J[:pages].first[:subject]
-    tag body, "PAGE_SUBJECT", J[:pages].first[:subject]
+    tag body, "PAGE_TITLE", J[:pages].first[:subject]
     tag body, "PAGE_CONTENT", J[:pages].first[:content]
   else
     
