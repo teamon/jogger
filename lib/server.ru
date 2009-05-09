@@ -38,14 +38,14 @@ def parse_with_entry(body, entry, counter = 0)
     category_block = $1
     category_counter = -1
     entry[:categories].map do |category|
-      category_counter += 1
       catbody = category_block.dup
+      category_counter += 1
       
       tag catbody, "ENTRY_CATEGORY_CLASS", "entrycategory#{(category_counter % 2)+1}"
       tag catbody, "ENTRY_CATEGORY_HREF", "/za_duzo_bys_chcial"
       tag catbody, "ENTRY_CATEGORY_HREF_DESCR", category
       tag catbody, "ENTRY_CATEGORY_TITLE", category
-      catbody.gsub!(%r|<ENTRY_CATEGORY_NOT_LAST>(.+)</ENTRY_CATEGORY_NOT_LAST>|m) { category_counter == entry[:categories].size ? "" : $1 }
+      catbody.gsub!(%r|<ENTRY_CATEGORY_NOT_LAST>(.+)</ENTRY_CATEGORY_NOT_LAST>|m) { category_counter == entry[:categories].size-1 ? "" : $1 }
       catbody
     end.join
   end
@@ -91,8 +91,28 @@ def parse(type, body)
       tag archbody, "ARCHIVE_HREF_DESCR", archive[:name]
       tag archbody, "ARCHIVE_CLASS", "archive#{(archive_counter % 2)+1}"
       tag archbody, "ARCHIVE_CURRENT_DESCR", "Maj 2009"
-      archbody.gsub!(%r|<ARCHIVE_NOT_LAST>(.+)</ARCHIVE_NOT_LAST>|m) { archive_counter == J[:archive].size ? "" : $1 }
+      archbody.gsub!(%r|<ARCHIVE_NOT_LAST>(.+)</ARCHIVE_NOT_LAST>|m) { archive_counter == J[:archive].size-1 ? "" : $1 }
       archbody
+    end.join
+  end
+  
+  body.gsub!(%r|<CATEGORY_BLOCK>(.+)</CATEGORY_BLOCK>|m) do
+    category_block = $1
+    category_counter = -1
+    J[:categories].map do |category|
+      catbody = category_block.dup
+      category_counter += 1
+      
+      tag catbody, "CATEGORY_CLASS", "category#{(category_counter % 2)+1}"
+      tag catbody, "CATEGORY_ENTRIES", category[:entries]
+      tag catbody, "CATEGORY_HREF", "/za_duzo_bys_chcial"
+      tag catbody, "CATEGORY_HREF_DESCR", category[:name]
+      tag catbody, "CATEGORY_TITLE", category[:name]
+      tag catbody, "CATEGORY_ID", category_counter
+      tag catbody, "CATEGORY_LEVEL", rand(6)
+      tag catbody, "CATEGORY_SUB_CLASS", "subcategory#{category[:sub]}"
+      catbody.gsub!(%r|<CATEGORY_NOT_LAST>(.+)</CATEGORY_NOT_LAST>|m) { category_counter == J[:categories].size-1 ? "" : $1 }
+      catbody
     end.join
   end
   
