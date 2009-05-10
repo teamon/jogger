@@ -14,7 +14,7 @@ h3. Inicjalizacja
 <pre><code>
 mkdir my_jogger
 cd my_jogger
-rubber
+rubber configure
 </pre></code>
 
 h3. Pobranie plików z Joggera
