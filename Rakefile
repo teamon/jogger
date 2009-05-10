@@ -24,6 +24,7 @@ spec = Gem::Specification.new do |s|
   s.files = %w( LICENSE README.textile Rakefile ) +  Dir.glob("{bin,lib}/**/*")
   s.add_dependency('mechanize', '>= 0.9.0')
   s.add_dependency('thin')
+  s.add_dependency('ezcrypto', '>= 0.7.0')
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|

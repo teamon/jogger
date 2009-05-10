@@ -1,4 +1,5 @@
 require 'mechanize'
+require 'ezcrypto'
 
 class Rubber
   def initialize(args)
@@ -7,26 +8,9 @@ class Rubber
   end
 
   def run
-    load_config_file
-  end
-
-  protected
-
-  def load_config_file
-    if File.exists?("config.yml")
-      @config = YAML.load(File.read("config.yml"))
-    else
-      print "jabber id: "
-      id = gets.chomp
-      print "hasło: "
-      pass = gets.chomp
-      File.open("config.yml", "w") {|f| f.write YAML.dump({:jabber_id => id, :password => pass}) }
-      File.open("content.yml", "w") {|f| f.write File.read(File.join(File.dirname(__FILE__), "content.yml.sample")) } unless File.exists?("content.yml")
-      puts "Plik config.yml został utworzony."
-      exit
-    end
-
     case @args[0]
+    when 'configure'
+      configure
     when 'download'
       download
     when 'upload'
@@ -37,6 +21,36 @@ class Rubber
     else
       usage
     end
+  end
+
+  protected
+
+  def ez
+    EzCrypto::Key.with_password "password", (RUBY_PLATFORM =~ /mswin32/ ? `hostname` : `uname -a`)
+  end
+
+  def load_config_file
+    if File.exists?("config.yml")
+      @config = YAML.load(File.read("config.yml"))
+      @config[:password] = ez.decrypt64 @config[:password]
+    else
+      puts "Brak pliku config.yml. Uruchom 'rubber configure'"
+      exit
+    end
+  end
+
+  def configure
+    print "jabber id: "
+    id = STDIN.gets.chomp
+    print "hasło: "
+    system "stty -echo"
+    pass = ez.encrypt64 STDIN.gets.chomp
+    system "stty echo"
+    puts
+
+    File.open("config.yml", "w") {|f| f.write YAML.dump({:jabber_id => id, :password => pass}) }
+    File.open("content.yml", "w") {|f| f.write File.read(File.join(File.dirname(__FILE__), "content.yml.sample")) } unless File.exists?("content.yml")
+    puts "Plik config.yml został utworzony."
   end
 
   def server
@@ -125,6 +139,7 @@ class Rubber
   end
 
   def login
+    load_config_file
     form = @agent.get('https://login.jogger.pl/login/').forms.first
     form.login_jabberid = @config[:jabber_id]
     form.login_jabberpass = @config[:password]
