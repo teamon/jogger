@@ -16,9 +16,13 @@ class Rubber
     if File.exists?("config.yml")
       @config = YAML.load(File.read("config.yml"))
     else
-      File.open("config.yml", "w") {|f| f.write YAML.dump({:jabber_id => "your@jabber.id", :password => "secret"}) }
+      print "jabber id: "
+      id = gets.chomp
+      print "hasło: "
+      pass = gets.chomp
+      File.open("config.yml", "w") {|f| f.write YAML.dump({:jabber_id => id, :password => pass}) }
       File.open("content.yml", "w") {|f| f.write File.read(File.join(File.dirname(__FILE__), "content.yml.sample")) } unless File.exists?("content.yml")
-      puts "Brak pliku config.yml. Przykładowy plik został utworzony."
+      puts "Plik config.yml został utworzony."
       exit
     end
 
