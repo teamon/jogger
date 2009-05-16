@@ -1,8 +1,6 @@
 require 'rack/response'
 
 
-J = YAML.load(File.read("content.yml"))
-
 MONTHS = %w(stycznia lutego marca kwietnia maja czerwca lipa sierpnia września pażdziernika listopada grudnia)
 
 def tag(body, pattern, replacement)
@@ -106,13 +104,13 @@ def parse_with_entry(body, entry, counter = 0)
   body
 end
 
-def parse(type, body)
+def parse(type, body)  
   body.gsub!(%r|<INCLUDE>(.+?)</INCLUDE>|) { parse nil, File.read("files/#{$1}") }
   
   body.gsub!(%r|<ARCHIVE_BLOCK>(.+?)</ARCHIVE_BLOCK>|m) do
     archive_block = $1
     archive_counter = -1
-    J[:archive].map do |archive|
+    @Jogger[:archive].map do |archive|
       archive_counter += 1
       archbody = archive_block.dup
       
@@ -121,7 +119,7 @@ def parse(type, body)
       tag archbody, "ARCHIVE_HREF_DESCR", archive[:name]
       tag archbody, "ARCHIVE_CLASS", "archive#{(archive_counter % 2)+1}"
       tag archbody, "ARCHIVE_CURRENT_DESCR", "Maj 2009"
-      archbody.gsub!(%r|<ARCHIVE_NOT_LAST>(.+?)</ARCHIVE_NOT_LAST>|m) { archive_counter == J[:archive].size-1 ? "" : $1 }
+      archbody.gsub!(%r|<ARCHIVE_NOT_LAST>(.+?)</ARCHIVE_NOT_LAST>|m) { archive_counter == @Jogger[:archive].size-1 ? "" : $1 }
       archbody
     end.join
   end
@@ -129,7 +127,7 @@ def parse(type, body)
   body.gsub!(%r|<CATEGORY_BLOCK>(.+?)</CATEGORY_BLOCK>|m) do
     category_block = $1
     category_counter = -1
-    J[:categories].map do |category|
+    @Jogger[:categories].map do |category|
       catbody = category_block.dup
       category_counter += 1
       
@@ -141,17 +139,17 @@ def parse(type, body)
       tag catbody, "CATEGORY_ID", category_counter
       tag catbody, "CATEGORY_LEVEL", rand(6)
       tag catbody, "CATEGORY_SUB_CLASS", "subcategory#{category[:sub]}"
-      catbody.gsub!(%r|<CATEGORY_NOT_LAST>(.+?)</CATEGORY_NOT_LAST>|m) { category_counter == J[:categories].size-1 ? "" : $1 }
+      catbody.gsub!(%r|<CATEGORY_NOT_LAST>(.+?)</CATEGORY_NOT_LAST>|m) { category_counter == @Jogger[:categories].size-1 ? "" : $1 }
       catbody
     end.join
   end
   
-  body.gsub!(%r|<LINK_BLOCK_EXIST>(.+?)</LINK_BLOCK_EXIST>|m) { J[:links] ? parse(nil, $1) : "" }
+  body.gsub!(%r|<LINK_BLOCK_EXIST>(.+?)</LINK_BLOCK_EXIST>|m) { @Jogger[:links] ? parse(nil, $1) : "" }
     
   body.gsub!(%r|<LINK_GROUP_BLOCK>(.+?)</LINK_GROUP_BLOCK>|m) do
     link_group_block = $1
     link_counter = -1
-    J[:links].map do |link_group|
+    @Jogger[:links].map do |link_group|
       grobody = link_group_block.dup
       tag grobody, "LINK_GROUP_DESCR", link_group[:name]
       
@@ -175,12 +173,45 @@ def parse(type, body)
     end.join
   end
   
+  tag body, "JID", "me@jabber.foo"
+  tag body, "JOG_TITLE", "My super awesome jogger"
+  tag body, "JOG", "teamon"
+  tag body, "HOME", "/"
+  tag body, "RSS", "/rss"
+  tag body, "ALL_ENTRIES_HREF", "/"
+  tag body, "CURRENT_PAGE_HREF", "/entry"
+  
+  tag body, "HEADER", <<-HEADER
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="pl">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<title>Jogger :: teamon</title>
+<link rel="StyleSheet" href="/files/style.css" type="text/css">
+</head>
+<body>
+  HEADER
+  
+  tag body, "FOOTER", <<-FOOTER  
+</body>
+</html>
+  FOOTER
+  
   case type
   when :entries
+    body.gsub!(%r|<MINIBLOG_BLOCK>(.+?)</MINIBLOG_BLOCK>|m) do
+      $1.gsub!(%r|<ENTRY_BLOCK>(.+?)</ENTRY_BLOCK>|m) do
+        entry_block = $1
+        entry_counter = -1
+        @Jogger[:entries].select {|e| e[:miniblog] }.map {|entry| parse_with_entry(entry_block.dup, entry, entry_counter += 1) }.join    
+      end
+    end
+    
     body.gsub!(%r|<ENTRY_BLOCK>(.+?)</ENTRY_BLOCK>|m) do
       entry_block = $1
       entry_counter = -1
-      J[:entries].map {|entry| parse_with_entry(entry_block.dup, entry, entry_counter += 1) }.join    
+      @Jogger[:entries].reject {|e| e[:miniblog] }.map {|entry| parse_with_entry(entry_block.dup, entry, entry_counter += 1) }.join    
     end
     
     body.gsub!(%r|<PAGE_BLOCK_EXIST>(.+?)</PAGE_BLOCK_EXIST>|) { parse(:entries, $1) }
@@ -191,7 +222,7 @@ def parse(type, body)
     
 
   when :comments
-    entry = J[:entries].first
+    entry = @Jogger[:entries].first
     parse_with_entry(body, entry)
     
     body.gsub!(%r|<COMMENT_BLOCK>(.+?)</COMMENT_BLOCK>|m) do
@@ -277,9 +308,9 @@ def parse(type, body)
   when :login
     
   when :page
-    tag body, "PAGE_SUBJECT", J[:pages].first[:subject]
-    tag body, "PAGE_TITLE", J[:pages].first[:subject]
-    tag body, "PAGE_CONTENT", J[:pages].first[:content]
+    tag body, "PAGE_SUBJECT", @Jogger[:pages].first[:subject]
+    tag body, "PAGE_TITLE", @Jogger[:pages].first[:subject]
+    tag body, "PAGE_CONTENT", @Jogger[:pages].first[:content]
   else
     
   end
@@ -293,6 +324,8 @@ app = Proc.new do |env|
   if path =~ %r[/files/]
     Rack::File.new(Dir.pwd).call(env)
   else
+    @Jogger = YAML.load(File.read("content.yml"))
+    
     content = case path
     when "/"
       parse :entries, File.read("Szablon wpisów.html")
