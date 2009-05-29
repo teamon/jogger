@@ -1,4 +1,4 @@
-rubber v. 0.0.5
+rubber v. 0.0.6
 ===============
 Edytor szablonów Joggera
 
