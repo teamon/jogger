@@ -129,9 +129,9 @@ class Rubber
 
   def get_pagesmap
     @pagesmap = Hash[*@agent.get('https://login.jogger.pl/templates/edit/').links.select{|e| e.href =~ %r[/templates/edit/\?page_id] }.map {|e| ["strony/#{e.text}.html", e.href]}.flatten]
-    @pagesmap["Szablon wpisów.html"] ='/templates/edit/?file=entries'
-    @pagesmap["Szablon komentarzy.html"] ='/templates/edit/?file=comments'
-    @pagesmap["Szablon logowania.html"] ='/templates/edit/?file=login'
+    @pagesmap["Szablon_wpisow.html"] ='/templates/edit/?file=entries'
+    @pagesmap["Szablon_komentarzy.html"] ='/templates/edit/?file=comments'
+    @pagesmap["Szablon_logowania.html"] ='/templates/edit/?file=login'
    end
 
   def get_filemap
