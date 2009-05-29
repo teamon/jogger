@@ -1,7 +1,11 @@
 require 'rack/response'
-
+require 'uri'
 
 MONTHS = %w(stycznia lutego marca kwietnia maja czerwca lipa sierpnia września pażdziernika listopada grudnia)
+
+def colorize(content)
+  content.gsub!(%r|\{geshi +lang=(.+?)\}(.+?)\{/geshi\}|m) { "<pre>#{$2}</pre>" }
+end
 
 def tag(body, pattern, replacement)
   body.gsub! %r|<#{pattern}/>|, replacement.to_s
@@ -42,9 +46,9 @@ def parse_with_entry(body, entry, counter = 0)
   tag body, "ENTRY_ID", rand(100)
   tag body, "ENTRY_LEVEL", rand(3)
   
-  tag body, "ENTRY_CONTENT", entry[:content].sub(%r|<EXCERPT>|, "")
-  tag body, "ENTRY_CONTENT_LONG", entry[:content].split(%r|<EXCERPT>|).last
-  tag body, "ENTRY_CONTENT_SHORT", entry[:content].split(%r|<EXCERPT>|).first
+  tag body, "ENTRY_CONTENT", colorize(entry[:content].sub(%r|<EXCERPT>|, ""))
+  tag body, "ENTRY_CONTENT_LONG", colorize(entry[:content].split(%r|<EXCERPT>|).last)
+  tag body, "ENTRY_CONTENT_SHORT", colorize(entry[:content].split(%r|<EXCERPT>|).first)
   body.gsub!(%r|<ENTRY_CONTENT_SHORT_EXIST>(.+?)</ENTRY_CONTENT_SHORT_EXIST>|m) { entry[:content]["<EXCERPT>"] ? parse_with_entry($1, entry) : "" }
   body.gsub!(%r|<ENTRY_CONTENT_SHORT_NOT_EXIST>(.+?)</ENTRY_CONTENT_SHORT_NOT_EXIST>|m) { entry[:content]["<EXCERPT>"] ? "" : parse_with_entry($1, entry) }
   
@@ -328,18 +332,27 @@ app = Proc.new do |env|
     
     content = case path
     when "/"
-      parse :entries, File.read("Szablon wpisów.html")
+      parse :entries, File.read("Szablon_wpisow.html")
     when "/entry"
-      parse :comments, File.read("Szablon komentarzy.html")
+      parse :comments, File.read("Szablon_komentarzy.html")
     when "/login"
-      parse :login, File.read("Szablon logowanie.html")
+      parse :login, File.read("Szablon_logowanie.html")
     else
-      path = "strony/#{path.gsub('-', ' ').gsub('/', '').capitalize}.html"
-      if File.exists?(path)
-        parse :page, File.read(path)
+      page_path = "strony/#{path.gsub('-', ' ').gsub('/', '').capitalize}.html"
+      title = URI.unescape(path.gsub('/', ''))
+      entry_path = "posty/#{title}.html"
+          
+      if File.exists?(page_path)
+        parse :page, File.read(page_path)
+      elsif File.exists?(entry_path)
+        @Jogger[:entries][0][:subject] = title
+        @Jogger[:entries][0][:content] = File.read(entry_path)
+        parse :comments, File.read("Szablon_komentarzy.html")
+        
       else
         "NotFound"
       end
+      
     end
     
     [200, {"Content-type" => "text/html"}, content || ""]

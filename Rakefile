@@ -3,10 +3,10 @@ require 'rake/gempackagetask'
 
 PLUGIN = "rubber"
 GEM_NAME = "rubber"
-GEM_VERSION = "0.0.5"
+GEM_VERSION = "0.0.6"
 AUTHOR = "Tymon Tobolski"
 EMAIL = "i@teamon.eu"
-HOMEPAGE = "http://teamon.eu/projekty/"
+HOMEPAGE = "http://blog.teamon.eu/projekty/"
 SUMMARY = "Edytor szablonów Joggera"
 
 spec = Gem::Specification.new do |s|
@@ -21,7 +21,7 @@ spec = Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.bindir = 'bin'
   s.executables = %w( rubber )
-  s.files = %w( LICENSE README.textile Rakefile ) +  Dir.glob("{bin,lib}/**/*")
+  s.files = %w( LICENSE README.markdown Rakefile ) +  Dir.glob("{bin,lib}/**/*")
   s.add_dependency('mechanize', '>= 0.9.0')
   s.add_dependency('thin')
   s.add_dependency('ezcrypto', '>= 0.7.0')

@@ -81,6 +81,10 @@ class Rubber
         File.open(filename, 'w') {|f| f.write @agent.get("https://login.jogger.pl#{url}").forms.first.templatesContent }
       end
     end
+    
+    # posty
+    Dir.mkdir("posty") unless File.exists?("posty")
+    File.open(File.join("posty", "new_one.html"), 'w') {|f| f.write File.read(File.join(File.dirname(__FILE__), "new_entry.html.sample"))} unless File.exists?(File.join("posty", "new_one.html"))
   end
 
   def upload(files = [])
