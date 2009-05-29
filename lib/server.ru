@@ -3,7 +3,7 @@ require 'uri'
 
 MONTHS = %w(stycznia lutego marca kwietnia maja czerwca lipa sierpnia września pażdziernika listopada grudnia)
 
-def colorize(content)
+def colorize!(content)
   content.gsub!(%r|\{geshi +lang=(.+?)\}(.+?)\{/geshi\}|m) { "<pre>#{$2}</pre>" }
 end
 
@@ -46,9 +46,11 @@ def parse_with_entry(body, entry, counter = 0)
   tag body, "ENTRY_ID", rand(100)
   tag body, "ENTRY_LEVEL", rand(3)
   
-  tag body, "ENTRY_CONTENT", colorize(entry[:content].sub(%r|<EXCERPT>|, ""))
-  tag body, "ENTRY_CONTENT_LONG", colorize(entry[:content].split(%r|<EXCERPT>|).last)
-  tag body, "ENTRY_CONTENT_SHORT", colorize(entry[:content].split(%r|<EXCERPT>|).first)
+  colorize!(entry[:content])
+  
+  tag body, "ENTRY_CONTENT", entry[:content].sub(%r|<EXCERPT>|, "")
+  tag body, "ENTRY_CONTENT_LONG", entry[:content].split(%r|<EXCERPT>|).last
+  tag body, "ENTRY_CONTENT_SHORT", entry[:content].split(%r|<EXCERPT>|).first
   body.gsub!(%r|<ENTRY_CONTENT_SHORT_EXIST>(.+?)</ENTRY_CONTENT_SHORT_EXIST>|m) { entry[:content]["<EXCERPT>"] ? parse_with_entry($1, entry) : "" }
   body.gsub!(%r|<ENTRY_CONTENT_SHORT_NOT_EXIST>(.+?)</ENTRY_CONTENT_SHORT_NOT_EXIST>|m) { entry[:content]["<EXCERPT>"] ? "" : parse_with_entry($1, entry) }
   
