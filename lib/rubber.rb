@@ -162,6 +162,7 @@ rubber [action]
 Actions:
  download (--force)
  upload [file]
+ server
 USAGE
     exit
   end
