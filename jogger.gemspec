@@ -1,20 +1,20 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{rubber}
-  s.version = "0.0.7"
+  s.name = %q{jogger}
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tymon Tobolski"]
-  s.date = %q{2009-06-13}
-  s.default_executable = %q{rubber}
+  s.date = %q{2010-02-05}
+  s.default_executable = %q{jogger}
   s.description = %q{Edytor szablonów Joggera}
   s.email = %q{i@teamon.eu}
-  s.executables = ["rubber"]
-  s.files = ["LICENSE", "README.markdown", "Rakefile", "bin/rubber", "lib/content.yml.sample", "lib/new_entry.html.sample", "lib/rubber.rb", "lib/server.ru"]
+  s.executables = ["jogger"]
+  s.files = ["LICENSE", "README.markdown", "Rakefile", "bin/jogger", "lib/content.yml.sample", "lib/new_entry.html.sample", "lib/rubber.rb", "lib/server.ru"]
   s.homepage = %q{http://blog.teamon.eu/projekty/}
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.2}
+  s.rubygems_version = %q{1.3.5}
   s.summary = %q{Edytor szablonów Joggera}
 
   if s.respond_to? :specification_version then

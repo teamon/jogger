@@ -1,10 +1,12 @@
-rubber v. 0.0.6
-===============
 Edytor szablonów Joggera
+===============
+
+Wymagania
+---------
+    ruby ;]
 
 Instalacja
 ----------
-    gem sources -a http://gems.github.com
     sudo gem install teamon-rubber
 
 

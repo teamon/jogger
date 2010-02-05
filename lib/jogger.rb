@@ -1,7 +1,9 @@
+# encoding: utf-8
+
 require 'mechanize'
 require 'ezcrypto'
 
-class Rubber
+class Jogger
   def initialize(args)
     @args = args
     @agent = WWW::Mechanize.new
@@ -81,7 +83,7 @@ class Rubber
         File.open(filename, 'w') {|f| f.write @agent.get("https://login.jogger.pl#{url}").forms.first.templatesContent }
       end
     end
-    
+
     # posty
     Dir.mkdir("posty") unless File.exists?("posty")
     File.open(File.join("posty", "new_one.html"), 'w') {|f| f.write File.read(File.join(File.dirname(__FILE__), "new_entry.html.sample"))} unless File.exists?(File.join("posty", "new_one.html"))
@@ -157,12 +159,14 @@ class Rubber
 
   def usage
     puts <<-USAGE
-rubber [action]
+jogger [action]
 
-Actions:
- download (--force)
- upload [file]
- server
+actions:
+  configure     - Konfiguracja loginu
+  download      - Pobierz szablon z joggera
+                  --force nadpisuje lokalne pliki bez pytania
+  upload [file] - Wyślij plik na serwer
+  server        - Uruchom webserwer http://0.0.0.0:1337
 USAGE
     exit
   end

@@ -1,9 +1,10 @@
+# encoding: utf-8
+
 require 'rubygems'
 require 'rake/gempackagetask'
 
-PLUGIN = "rubber"
-GEM_NAME = "rubber"
-GEM_VERSION = "0.0.7"
+GEM_NAME = "jogger"
+GEM_VERSION = "0.1.0"
 AUTHOR = "Tymon Tobolski"
 EMAIL = "i@teamon.eu"
 HOMEPAGE = "http://blog.teamon.eu/projekty/"
@@ -20,7 +21,7 @@ spec = Gem::Specification.new do |s|
   s.homepage = HOMEPAGE  
   s.require_path = 'lib'
   s.bindir = 'bin'
-  s.executables = %w( rubber )
+  s.executables = %w( jogger )
   s.files = %w( LICENSE README.markdown Rakefile ) +  Dir.glob("{bin,lib}/**/*")
   s.add_dependency('mechanize', '>= 0.9.0')
   s.add_dependency('thin')

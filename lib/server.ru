@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'rack/response'
 require 'uri'
 
@@ -330,29 +332,29 @@ app = Proc.new do |env|
   if path =~ %r[/files/]
     Rack::File.new(Dir.pwd).call(env)
   else
-    @Jogger = YAML.load(File.read("content.yml"))
+    @Jogger = YAML.load(::File.read("content.yml"))
     
     content = case path
     when "/"
-      parse :entries, File.read("Szablon_wpisow.html")
+      parse :entries, ::File.read("Szablon_wpisow.html")
     when "/entry"
-      parse :comments, File.read("Szablon_komentarzy.html")
+      parse :comments, ::File.read("Szablon_komentarzy.html")
     when "/login"
-      parse :login, File.read("Szablon_logowanie.html")
+      parse :login, ::File.read("Szablon_logowanie.html")
     else
       page_path = "strony/#{path.gsub('-', ' ').gsub('/', '').capitalize}.html"
       title = URI.unescape(path.gsub('/', ''))
       entry_path = "posty/#{title}.html"
           
-      if File.exists?(page_path)
-        parse :page, File.read(page_path)
-      elsif File.exists?(entry_path)
+      if ::File.exists?(page_path)
+        parse :page, ::File.read(page_path)
+      elsif ::File.exists?(entry_path)
         @Jogger[:entries][0][:subject] = title
-        @Jogger[:entries][0][:content] = File.read(entry_path)
-        parse :comments, File.read("Szablon_komentarzy.html")
+        @Jogger[:entries][0][:content] = ::File.read(entry_path)
+        parse :comments, ::File.read("Szablon_komentarzy.html")
         
       else
-        "NotFound"
+        ["NotFound"]
       end
       
     end

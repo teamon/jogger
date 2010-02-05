@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+# require 'rubber'
+require File.dirname(__FILE__) + '/../lib/jogger.rb'
+
+Jogger.new(ARGV).run
